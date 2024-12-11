@@ -1,11 +1,12 @@
-*****Public Econ
+*****Public Economics
 
 /*
  Rules Reply to each question providing the output of your analyses, together with a brief comment. Please provide also the do file used to produce your results. Send your answers and code in a single pdf file to salvatore.lattanzio@unibocconi.it by midnight of 17 December 2024. The assignment is worth 3 points. Data Thedatacalledmunicipalities5k 2000 2015.dta is a panel dataset where units of observations are Italian municipalities over time (years). Only municipalities with more than 5,000 residents are included. You can download the dataset from Blackboard.
  */
 *Use this data to study the relationship between mayor's gender and municipalities'balance sheets.
 
-use "C:\Users\Grego\OneDrive - Università Commerciale Luigi Bocconi\Dokumente\Semester 3 Bocconi\PubEcon\Projekt\PublicEcon\municipalities5k_2000_2015.dta", clear
+use "municipalities5k_2000_2015.dta", clear
+
 
 *Getting packages:
 /*
@@ -22,15 +23,16 @@ by female: tabstat lptot_total lp_e_tax_fee lp_e_other, stats(mean, sd, n)
 *Answer: We observe some differences as expected but we cannot interpret this as causal as there exist many confounders. That means covariates could drive or hide outcomes of a naive test. One example would be share of employed within a city. High employment could be related to the willigness to test a women as a major while also being positivly correlated with revenues / overall health of public finance. 
 
 
-***Q2 Run an OLS regression of log per capita total expenditures on the female dummy. Then, estimate a regression controlling for covariates (choose which ones to include and justify why). Finally, estimate a regression with municipality fixed effects (keep control ling for the relevant time-varying covariates). Under what conditions can each of these estimates be interpreted as causal? [0.35 points]
+***Q2 Run an OLS regression of log per capita total expenditures on the female dummy. Then, estimate a regression controlling for covariates (choose which ones to include and justify why). Finally, estimate a regression with municipality fixed effects (keep controlling for the relevant time-varying covariates). Under what conditions can each of these estimates be interpreted as causal? [0.35 points]
  
-reg lptot_total female 
+reg lptot_total female // OLS regression
 
 global g_controls =  "sh_empl sh_hschool hs_mayor sh_young_old logpop year share_fcons"
  
-reg lptot_total female $g_controls, vce(hc2)
+reg lptot_total female $g_controls, vce(hc2) // OLS regrssion controlling for selected covariates
 
-*Used: 
+
+*Used covariates:
 *1. sh_emply: As said in a)
 *2. sh_hschool: Education drives election outcomes and potentially state of public finance e.g. by not providing enough checks on political leaders
 *3. hs_mayor: Women might be differently educated, education drives political decisions, we want to isolate the effect of gender
@@ -41,27 +43,28 @@ reg lptot_total female $g_controls, vce(hc2)
 
 *Not used: 
 *1. sh_illiteracy as correlated with sh_hschool with -0.7375
-*2. population: Normally, if regression for log value we use log pop (?)
+*2. population: Perfect collinearity with logpop
 *3. lp_e_tax_fee, lp_e_other
 *4.
 
 reghdfe lptot_total female $g_controls, absorb(n_istat) vce(cluster n_istat)
 
+* reghdfe more efficient than xtreg with greater number of observations. 
+/*xtset n_istat
+xtreg lptot_total female $g_controls, fe*/
 
-**xtreg: should we use xtreg?
 
-
-**The first one cannot really be considered causal, it is to simplistic. The second one can still face a number of issues even if selection bias is controlled for: There still might exist omitted variables or reverse causation. 
+**The first one cannot really be considered causal, it is to simplistic and simply returns the correlation between the two variables. The second one can still face a number of issues even if selection bias is controlled for: There still might exist omitted variables (i.e. mayors innate political ability or motivation) or reverse causality, which the fixed effects tries to remedy. 
 *!!!!Can improve this answer from the slides!!!!
  
  
 ***Q3 What is (are) the identifying assumption(s) for the female margin of victory to be used as a running variable in a regression discontinuity design? Provide evidence that the appropriate design is sharp RDD in this case. [0.10 points]
  
- *1. No manipulation around cutoff (No change in density (bunching or similar))
+ *1. No manipulation around cutoff at the Cutoff (No change in density (bunching or similar))
  *2. Running variable affects treatment (0.5 vote share does lead to female mayor)
  *3. Balanced covariates -> No other important variable is significantly altered while not able to be controlled for
 
-**Graph check:
+**Graph check for sharp RDD
 rdplot female mv 
 *Seems good, treatment is sharp
 

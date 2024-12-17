@@ -221,7 +221,7 @@ mat rownames coef= 1% 2% 3% 4% 5% 6% 7% 8% 9% 10% 11% 12% 13% 14% 15% 16% 17% 18
 local i=1
 *Estimate regressions for different bandwidths (between 2% and 30%)
 forvalues h=0.01(0.01)0.31 {
-	reg lptot_total female mv FemWon if abs(mv)<`h', cluster(n_istat)
+	reg lptot_total female mv FemWon if abs(mv)<`h', cluster(n_istat) robust
 	mat coef[`i',1]=`h'
 	mat coef[`i',2]=_b[female]
 	mat coef[`i',3]=_b[female]+1.96*_se[female]

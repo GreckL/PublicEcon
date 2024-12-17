@@ -5,6 +5,7 @@
  */
 *Use this data to study the relationship between mayor's gender and municipalities'balance sheets.
 
+clear all
 use "municipalities5k_2000_2015.dta", clear
 
 
@@ -71,6 +72,36 @@ rdplot female mv
 
 ***Q4 Check discontinuities in baseline covariates at the threshold of 0 for the female margin of victory. Are there any significant discontinuities? (Hint: estimate RDDs for each covariate to evaluate the statistical significance of the discontinuity). [0.20 points]
 
+** RD plots for all covariates
+global covariates = "lp_e_tax_fee lp_e_other share_fcons logpop sh_hschool sh_illiteracy sh_empl sh_young_old hs_mayor north south right left litor population pop_dens"
+
+local rd_graphs ""
+foreach var of global covariates {
+	// Rdrobust to estimate coefficient and confidence intervals for baseline covariates
+	rdrobust `var' mv
+	local coef = e(tau_cl)
+	local ci_l = e(ci_l_cl)
+	local ci_r = e(ci_r_cl)
+	
+	local varlabel: variable label `var' // Get the variable label
+    local plot_title "Coef = `:display %9.3f `coef'', CI = [`:display %9.3f `ci_l'', `:display %9.3f `ci_r'']"
+
+	// Rdplot to check discontinuities in baseline covariates 
+	rdplot `var' mv, graph_options(ytitle("`varlabel'") title("`plot_title'") legend(off)) name(g_`var', replace) hide
+    graph save g_`var', replace
+    local rd_graphs "`rd_graphs' g_`var'.gph"
+}
+
+graph combine `rd_graphs', altshrink
+
+
+graph combine `rd_graphs', col(3) iscale(0.5) ///
+    ysize(6) xsize(8) ///
+    title("Discontinuities in baseline covariates") ///
+    saving(BaselineCovariatesDiscontinuityCheck, replace)
+
+
+----
 
 ds lp_e_tax_fee lp_e_other share_fcons logpop sh_hschool sh_illiteracy sh_empl sh_young_old hs_mayor north south right left litor population pop_dens
 global g_covariates `r(varlist)'
@@ -79,6 +110,7 @@ matrix define R=J(16,6,.)
 matrix rownames R = lp_e_tax_fee lp_e_other share_fcons logpop sh_hschool sh_illiteracy sh_empl sh_young_old hs_mayor north south right left litor population pop_dens
 matrix colnames R = CIp1_L convp1RD CIp1_R CIp2_L convRDp2 CIp2_R
 matrix list R
+
 
 *Loop through each covariate and run RDD, use p(1) and p(2) -> Use robust CI
 global g_r = 1 

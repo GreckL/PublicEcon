@@ -279,31 +279,12 @@ Exercise 8
 
 	// Generating quartiles of the share_fcons
 	xtile share_fcons_quartile=share_fcons,n(4)
-	* Generates a numerical variable
-	
-	
-	
-	//Generate relevant interactions variable for each level
-	gen cont_share_interact=share_fcons*female
-	gen mv2=mv*mv
-	gen t=x
 	
 	// Continuous appraoch
 	reg lptot_total mv c.share_fcons##i.female $g_controls, robust
+	outreg2 using heterogenouseffects.tex, replace ctitle(Continuous approach)
 	
 	// Discrete approach
 	reg lptot_total mv i.share_fcons_quartile##i.female $g_controls, robust
-	
+	outreg2 using heterogenouseffects.tex, append ctitle(Discrete approach)
 
-	
-	reg lptot_total female 0.female#c.mv 1.female#c.mv 1.female#c.mv2 0.female#c.mv2
-	* Tom: I think what he wants us to do is to put i.share_fcons_quartile#i.female in the RDD regression. Maybe something like this?: 
-	rdrobust lptot_total mv i.share_fcons_quartile#i.female, p(2) c(0)
-	
-	* Or
-	 reg lptot_total female##share_fcons_quartile
-	* And
-	 reg lptot_total female##c.share_fcons
-
-
-	

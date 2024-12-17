@@ -159,8 +159,10 @@ Exercise 6
 -----------------------*/
 
 *Parametric local linear regression with optimal bandwidth (write down the estimated equation)
-
-rdrobust lptot_total mv, p(1) c(0)
+// Creating a global for controls
+global g_controls =  "sh_empl sh_hschool hs_mayor sh_young_old logpop share_fcons"
+ 
+rdrobust lptot_total mv, p(1) c(0) covs(${g_controls})
 outreg2 using rdregressions.tex, replace ctitle(Optimal Bandwidth)
 
 local bwl = e(h_l)
@@ -170,7 +172,7 @@ graph save ParametricRegressionOptimalBandwidth, replace
 
 *Parametric regression on the full sample with 2nd order polynomial fit on both sides of the threshold (write down the estimated equation)
 
-rdrobust lptot_total mv, p(2) c(0)
+rdrobust lptot_total mv, p(2) c(0) covs(${g_controls})
 outreg2 using rdregressions.tex, append ctitle(2nd order polynomial)
 
 rdplot lptot_total mv, c(0) p(2) kernel(tri) nbins(20 20) graph_options(xtitle("Margin of female victory") ytitle(Total expenditures (log, per capita)) title(Parametric Regression (2nd-order Polynomial fit)))
@@ -179,7 +181,7 @@ graph save ParametricRegressionSecondPolynomial, replace
 
 *Non-parametric local linear regression with optimal bandwidth. 
 
-rdrobust lptot_total mv, p(1) c(0)
+rdrobust lptot_total mv, p(1) c(0) covs(${g_controls})
 outreg2 using rdregressions.tex, append ctitle(Non-parametric)
 
 local bwl = e(h_l)
@@ -189,7 +191,7 @@ graph save NonParametricRegressionOptimalBandwidth, replace
 
 
 *Extra: Here also with p(2)
-rdrobust lptot_total mv, p(2) c(0)
+rdrobust lptot_total mv, p(2) c(0) covs(${g_controls})
 local bwl = e(h_l)
 local bwr = e(h_r) 
 rdplot lptot_total mv if (mv<=`bwr' & mv >= -`bwl'), c(0) p(2) kernel(tri) nbins(20 20) 
@@ -203,10 +205,6 @@ graph export ParametricRegressions.pdf, replace
 erase "ParametricRegressionOptimalBandwidth.gph" 
 erase "ParametricRegressionSecondPolynomial.gph"
 erase "NonParametricRegressionOptimalBandwidth.gph"
-
-	
-
-*What do you conclude? (Hint: use the features of the rdrobust command). [0.75 points]
 
 
 
@@ -223,7 +221,7 @@ mat rownames coef= 2% 3% 4% 5% 6% 7% 8% 9% 10% 11% 12% 13% 14% 15% 16% 17% 18% 1
 local i=1
 *Estimate regressions for different bandwidths (between 2% and 30%)
 forvalues h=0.02(0.01)0.31 {
-	reg lptot_total female mv FemWon if abs(mv)<`h', cluster(n_istat) robust
+	reg lptot_total female mv FemWon $g_controls if abs(mv)<`h', cluster(n_istat) robust
 	mat coef[`i',1]=`h'
 	mat coef[`i',2]=_b[female]
 	mat coef[`i',3]=_b[female]+1.96*_se[female]
@@ -288,10 +286,14 @@ Exercise 8
 	//Generate relevant interactions variable for each level
 	gen cont_share_interact=share_fcons*female
 	gen mv2=mv*mv
-	gen t=
+	gen t=x
 	
-	// Estimating the regression with 
-	rdrobust lptot_total mv i.share_fcons_quartile##i.female, p(2) c(0)
+	// Continuous appraoch
+	reg lptot_total mv c.share_fcons##i.female $g_controls, robust
+	
+	// Discrete approach
+	reg lptot_total mv i.share_fcons_quartile##i.female $g_controls, robust
+	
 
 	
 	reg lptot_total female 0.female#c.mv 1.female#c.mv 1.female#c.mv2 0.female#c.mv2

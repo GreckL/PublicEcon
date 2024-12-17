@@ -141,8 +141,10 @@ Exercise 5
 	// Outlining why it is important to verify the continuity of the running variable around the threshold
 
 	// Generating a graph of the density of the running variable 
-	rddensity mv, plot
+	rddensity mv, plot  graph_opt(title(Density Discontinuity Test for Voting Margin) legend(off) name(density_plot, replace))
 
+	 graph export "", replace
+	 
 	// Checking for statistically significant discontinuities at the cutoff in the density of the running variable
 	// Manipulation test of running variable using default triangular kernel
 	rddensity mv, all
@@ -297,6 +299,10 @@ Exercise 8
 	* Tom: I think what he wants us to do is to put i.share_fcons_quartile#i.female in the RDD regression. Maybe something like this?: 
 	rdrobust lptot_total mv i.share_fcons_quartile#i.female, p(2) c(0)
 	
+	* Or
+	 reg lptot_total female##share_fcons_quartile
+	* And
+	 reg lptot_total female##c.share_fcons
 
 
 

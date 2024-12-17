@@ -219,10 +219,10 @@ Exercise 7
 gen FemWon = female*mv
 matrix coef=J(30,4,.)
 mat colnames coef=bw b ul ll
-mat rownames coef= 1% 2% 3% 4% 5% 6% 7% 8% 9% 10% 11% 12% 13% 14% 15% 16% 17% 18% 19% 20% 21% 22% 23% 24% 25% 26% 27% 28% 29% 30%
+mat rownames coef= 2% 3% 4% 5% 6% 7% 8% 9% 10% 11% 12% 13% 14% 15% 16% 17% 18% 19% 20% 21% 22% 23% 24% 25% 26% 27% 28% 29% 30%
 local i=1
 *Estimate regressions for different bandwidths (between 2% and 30%)
-forvalues h=0.01(0.01)0.31 {
+forvalues h=0.02(0.01)0.31 {
 	reg lptot_total female mv FemWon if abs(mv)<`h', cluster(n_istat) robust
 	mat coef[`i',1]=`h'
 	mat coef[`i',2]=_b[female]
@@ -233,7 +233,7 @@ forvalues h=0.01(0.01)0.31 {
 **Is there only a significant effect for bw 3%?
 
 **Number of obs per h
-forvalues h = 0.01(0.01)0.3 {
+forvalues h = 0.02(0.01)0.3 {
     count if abs(mv) < `h'
     di "Bandwidth `h': `r(N)' observations"
 }

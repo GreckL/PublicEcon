@@ -28,6 +28,7 @@ Initial script configuration
 	net install lpdensity, from(https://raw.githubusercontent.com/nppackages/lpdensity/master/stata) replace
 	ssc install ftools
 	ssc install estout
+	ssc install outreg2
 /*----------------------
 Exercise 1 
 -----------------------*/
@@ -158,6 +159,8 @@ Exercise 6
 *Parametric local linear regression with optimal bandwidth (write down the estimated equation)
 
 rdrobust lptot_total mv, p(1) c(0)
+outreg2 using rdregressions.tex, replace ctitle(Optimal Bandwidth)
+
 local bwl = e(h_l)
 local bwr = e(h_r) 
 rdplot lptot_total mv if (mv<=`bwr' & mv >= -`bwl'), c(0) p(1) kernel(tri) nbins(20 20) graph_options(xtitle("Margin of female victory") ytitle(Total expenditures (log, per capita)) title(Parametric Regression (Optimal Bandwidth)))
@@ -166,6 +169,8 @@ graph save ParametricRegressionOptimalBandwidth, replace
 *Parametric regression on the full sample with 2nd order polynomial fit on both sides of the threshold (write down the estimated equation)
 
 rdrobust lptot_total mv, p(2) c(0)
+outreg2 using rdregressions.tex, append ctitle(2nd order polynomial)
+
 rdplot lptot_total mv, c(0) p(2) kernel(tri) nbins(20 20) graph_options(xtitle("Margin of female victory") ytitle(Total expenditures (log, per capita)) title(Parametric Regression (2nd-order Polynomial fit)))
 graph save ParametricRegressionSecondPolynomial, replace
 
@@ -173,6 +178,8 @@ graph save ParametricRegressionSecondPolynomial, replace
 *Non-parametric local linear regression with optimal bandwidth. 
 
 rdrobust lptot_total mv, p(1) c(0)
+outreg2 using rdregressions.tex, append ctitle(Non-parametric)
+
 local bwl = e(h_l)
 local bwr = e(h_r) 
 rdplot lptot_total mv if (mv<=`bwr' & mv >= -`bwl'), c(0) kernel(tri) nbins(20 20) graph_options(xtitle("Margin of female victory") ytitle(Total expenditures (log, per capita)) title(Non-Parametric Regression (Optimal Bandwidth)))
